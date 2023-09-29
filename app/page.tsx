@@ -1,95 +1,136 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client'
+
+import { useState, useEffect } from 'react';
+import styled from 'styled-components'
+import MainTitle from '@/components/MainTitle';
+import CurrencySelect from '@/components/CurrencySelect'
+import ExchangeButton from '@/components/ExchangeButton';
+
+type ResponseRate = {
+  rate: number[]
+  result: number
+}
+
+const MainContainer = styled.main`
+  padding: 1rem 8px;
+
+  @media (min-width: 1025px) {
+    padding: 1rem 8rem;
+  }
+`
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+`
+const CurrencyContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex-wrap: no-wrap;
+  background-color: #eeebff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 3px 8px 10px rgb(0,0,0,0.25)
+`
+const Title = styled.h4`
+  margin: 0;
+`
+const RowDiv = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: no-wrap;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+`
+const Input = styled.input`
+  width: 80%;
+  text-align: end;
+  outline: none;
+  border-radius: .3rem;
+  border: solid 2px #42348e91;
+  padding: .1rem .5rem;
+
+  @media (min-width: 1025px) {
+    width: 20%;
+  }
+`
+const Span = styled.span`
+  width: 80%;
+  text-align: end;
+`
 
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+  const [fromValue, setFromValue] = useState(1)
+  const [toValue, setToValue] = useState(0)
+  const [fromCoin, setFromCoin] = useState("placeholder")
+  const [toCoin, setToCoin] = useState("placeholder")
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>()
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+  const convert = async () => {
+    const response = await fetch('/rate', {
+      method: 'POST',
+      headers: { 'Content-Type' : 'application/json' },
+      body: JSON.stringify({ 
+        fromCoin, 
+        toCoin, 
+        value: fromValue
+      })
+    })
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+    if (!response.ok) {
+      throw new Error('Fetching /rate Error')
+    }
+    const data = await response.json()
+    const { rate, result }: ResponseRate = data
+    setToValue(result)
+  }
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
+  useEffect(() => {
+    if (toCoin !== 'placeholder' && fromCoin !== 'placeholder') {
+      convert()
+    }
+  }, [fromCoin, toCoin])
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+  useEffect(() => {
+    clearTimeout(timeoutId)
+    if (toCoin !== 'placeholder' && fromCoin !== 'placeholder') {
+      const id = setTimeout(() => {
+        convert()
+      }, 500)
+      setTimeoutId(id)
+    }
+  }, [fromValue])
+  
+   return (
+    <>
+    <MainTitle/>
+    <MainContainer>
+      <Container>
+        <CurrencyContainer>
+          <Title id='25'>
+            From:
+          </Title>
+          <RowDiv>
+            <CurrencySelect change={setFromCoin} value={fromCoin}/>
+            <Input type='number' defaultValue={fromValue} onChange={(e: any) => setFromValue(e.target.value)}/>
+          </RowDiv>
+        </CurrencyContainer>
+
+        <ExchangeButton fromCoin={fromCoin} setFromCoin={setFromCoin} toCoin={toCoin} setToCoin={setToCoin}/>
+
+        <CurrencyContainer>
+          <Title>
+            To:
+          </Title>
+          <RowDiv>
+            <CurrencySelect change={setToCoin} value={toCoin} />
+            <Span>{toValue}</Span>
+          </RowDiv>
+        </CurrencyContainer>
+      </Container>
+    </MainContainer>
+    </>
   )
 }
