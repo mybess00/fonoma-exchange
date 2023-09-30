@@ -6,7 +6,6 @@ import useSWR from 'swr'
 
 type CurrencyProp = {
   change: React.Dispatch<React.SetStateAction<string>>
-  defaultValue?: string
   value: string
 }
 
@@ -15,6 +14,7 @@ const Select = styled.select`
   background: transparent;
   border: none;
   outline: none;
+  cursor: pointer;
   @media (min-width: 1025px) {
     width: 25%;
   }
@@ -33,7 +33,7 @@ const fetchCurrency = async (key: any) => {
   throw new Error(data.error)
 } 
 
-export default function CurrencySelect ({ change, defaultValue, value }: CurrencyProp) {
+export default function CurrencySelect ({ change, value }: CurrencyProp) {
 
   const selectRef = useRef<HTMLSelectElement | null>(null)
   const { data, error, isLoading } = useSWR('/currency', fetchCurrency)
