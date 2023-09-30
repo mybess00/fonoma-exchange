@@ -69,6 +69,7 @@ export default function Home() {
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>()
 
   const convert = async () => {
+    // Se obtiene la tasa de cambio y resultado de calcular la conversion entre las dos monedas
     const response = await fetch('/rate', {
       method: 'POST',
       headers: { 'Content-Type' : 'application/json' },
@@ -94,6 +95,7 @@ export default function Home() {
   }, [fromCoin, toCoin])
 
   useEffect(() => {
+    // Retardo al escribir en el <input> antes de calcular el cambio.
     clearTimeout(timeoutId)
     if (toCoin !== 'placeholder' && fromCoin !== 'placeholder') {
       const id = setTimeout(() => {

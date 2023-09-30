@@ -20,6 +20,7 @@ const Select = styled.select`
   }
 `
 const fetchCurrency = async (key: any) => {
+  // Obtener listado de monedas disponibles
   const response = await fetch(key, { method: 'GET' })
   if (!response.ok) {
     alert('Ha ocurrido un error')
@@ -39,6 +40,7 @@ export default function CurrencySelect ({ change, defaultValue, value }: Currenc
   const [prevOption, setPrevOption] = useState<HTMLOptionElement>()
 
   const handleSelected = (e: any) => {
+    // Cambia el contenido del <option> seleccionado a solo las siglas de la moneda
     const selectItem: HTMLSelectElement = e.target    
     const optionSelected = selectItem.selectedOptions.item(0)
     if (optionSelected) {

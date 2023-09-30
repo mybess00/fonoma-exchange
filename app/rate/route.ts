@@ -7,7 +7,7 @@ type BodyRequest = {
 }
 
 export async function POST (req: Request) {
-
+  // Se devuelve la tasa de cambio y la conversión entre las dos monedas seleccionadas.
   const API_KEY = process.env.API_KEY
   const body = await req.json()
   const { fromCoin, toCoin, value } : BodyRequest = body
